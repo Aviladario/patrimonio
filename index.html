@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Patrimonio Posadas</title>
+  <!-- Tailwind CSS para el diseño responsive -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Reglas estrictas de diseño UI/UX del relevamiento */
+    body {
+      background-color: #f9fafb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    
+    /* Scroll natural: Header y barra de advertencia NO son fijos ni sticky */
+    header, .advertencia-stripe, .tabs-container {
+      position: relative !important;
+    }
+
+    /* Estructura de checkboxes estricta en 1 columna para móviles */
+    .checkbox-container {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 0.5rem !important;
+    }
+    
+    .checkbox-label {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      gap: 0.4rem !important;
+      font-size: 0.95rem;
+      color: #374151;
+      cursor: pointer;
+      width: 100% !important; /* Garantiza el comportamiento de bloque en flexbox */
+    }
+    
+    .checkbox-label input[type="checkbox"] {
+      width: 1.15rem;
+      height: 1.15rem;
+      border-radius: 0.25rem;
+      border: 1px solid #d1d5db;
+      accent-color: #009639;
+      flex-shrink: 0; /* Evita que el checkbox se achique con textos largos */
+    }
+
+    /* Estilo de la barra de pestañas deslizable horizontalmente */
+    .tabs-container {
+      display: flex;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+    }
+    
+    .tabs-container::-webkit-scrollbar {
+      height: 4px;
+    }
+    
+    .tabs-container::-webkit-scrollbar-thumb {
+      background-color: #cbd5e1;
+      border-radius: 2px;
+    }
+
+    /* Foco móvil: margen de teclado virtual */
+    form {
+      padding-bottom: 50vh !important;
+    }
+
+    /* Estilo del glosario inyectado */
+    .btn-glosario {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.2rem;
+      height: 1.2rem;
+      font-size: 0.75rem;
+      font-weight: bold;
+      color: #1b5e20;
+      background-color: #e8f5e9;
+      border: 1px solid #c8e6c9;
+      border-radius: 9999px;
+      margin-left: auto; /* Empuja el botón al extremo derecho del contenedor flex */
+      flex-shrink: 0;    /* Previene la deformación elíptica en pantallas estrechas */
+      cursor: pointer;
+      transition: all 150ms ease-in-out;
+    }
+    
+    .btn-glosario:hover {
+      background-color: #c8e6c9;
+      color: #0d3c11;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CABECERA DE LA PWA (Scroll Natural) -->
+  <header class="bg-[#009639] text-white p-4">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">Patrimonio Posadas</h1>
+        <p class="text-sm text-green-100">Relevamiento de campo</p>
+      </div>
+      <!-- Indicador de sincronización en tiempo real -->
+      <div id="sync-indicator" class="bg-white text-[#009639] text-xs font-bold px-3 py-1.5 rounded-full shadow-sm">
+        Fichas pendientes de envío: <span id="pending-count">0</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- FRANJA DE ADVERTENCIA INSTITUCIONAL -->
+  <div class="advertencia-stripe bg-[#e8f5e9] text-[#1b5e20] py-2 px-4 border-b border-[#c8e6c9]">
+    <div class="max-w-4xl mx-auto text-xs font-semibold uppercase tracking-wider text-center">
+      Ficha de Registro Patrimonial Externo – Sin Ingreso al Inmueble
+    </div>
+  </div>
+
+  <!-- NAVEGACIÓN POR PESTAÑAS (TABS - Scroll Horizontal) -->
+  <nav class="tabs-container bg-white shadow-sm border-b border-gray-200 py-2 px-4 gap-2">
+    <button type="button" onclick="switchTab(1)" id="tab-btn-1" class="px-4 py-2 text-sm font-semibold rounded-lg bg-[#e8f5e9] text-[#1b5e20] border border-[#c8e6c9]">1. Localización</button>
+    <button type="button" onclick="switchTab(2)" id="tab-btn-2" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 border border-transparent hover:bg-gray-50">2. Morfología y Usos</button>
+    <button type="button" onclick="switchTab(3)" id="tab-btn-3" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 border border-transparent hover:bg-gray-50">3. Materialidad</button>
+    <button type="button" onclick="switchTab(4)" id="tab-btn-4" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 border border-transparent hover:bg-gray-50">4. Patologías</button>
+    <button type="button" onclick="switchTab(5)" id="tab-btn-5" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 border border-transparent hover:bg-gray-50">5. Intervenciones</button>
+    <button type="button" onclick="switchTab(6)" id="tab-btn-6" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 border border-transparent hover:bg-gray-50">6. Multimedia</button>
+    <button type="button" onclick="switchTab(7)" id="tab-btn-7" class="px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 border border-transparent hover:bg-gray-50">7. Historia</button>
+  </nav>
+
+  <!-- CONTENEDOR PRINCIPAL DEL RELEVAMIENTO -->
+  <main class="max-w-4xl mx-auto p-4 md:p-6">
+    <form id="relevamiento-form" class="space-y-6" onsubmit="handleFormSubmit(event)">
+
+      <!-- TAB 1: OPERADOR Y LOCALIZACIÓN -->
+      <section id="tab-section-1" class="tab-section space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 border-b pb-2">1. Operador y Localización Catastral</h2>
+        
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-4">
+          <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wider">Antecedentes Técnicos</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Rol de Usuario</label>
+              <select id="rol_usuario" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500">
+                <option value="" disabled selected>Seleccionar...</option>
+                <option value="Relevador Técnico">Relevador Técnico</option>
+                <option value="Pasante">Pasante</option>
+                <option value="Agente en gabinete">Agente en gabinete</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Responsable <span class="text-red-500">*</span></label>
+              <input type="text" id="responsable" required class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Nombre y Apellido">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Fecha de Registro</label>
+              <input type="date" id="fecha_registro" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Proyectista Original</label>
+              <input type="text" id="proyectista_original" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Ej: Arq. Alejandro Bustillo">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Fecha de Construcción (o estimada)</label>
+              <input type="text" id="fecha_construccion" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Ej: Circa 1930 / Década del 40">
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 space-y-4">
+          <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wider">Ubicación y Catastro</h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-600 mb-1">Dirección <span class="text-red-500">*</span></label>
+              <input type="text" id="direccion" required class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Ej: Calle Bolívar 1234">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Partida Inmobiliaria</label>
+              <input type="text" id="partida_inmobiliaria" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Código de partida">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Sección</label>
+              <input type="text" id="seccion" maxlength="3" class="catastro-input w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Ej: 02">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Chacra</label>
+              <input type="text" id="chacra" maxlength="4" class="catastro-input w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Ej: 14">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Manzana <span class="text-red-500">*</span></label>
+              <input type="text" id="manzana" required maxlength="4" class="catastro-input w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Ej: 36">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Parcela <span class="text-red-500">*</span></label>
+              <input type="text" id="parcela" required maxlength="4" class="catastro-input w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Ej: 04">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">N° de Finca</label>
+              <input type="text" id="n_finca" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500" placeholder="Número domiciliario">
+            </div>
+          </div>
+
+          <!-- Identificador GIS Generado -->
+          <div class="pt-4 border-t border-gray-100 flex flex-col items-center">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Identificador GIS Generado</span>
+            <div id="idgis-badge" class="px-6 py-3 bg-gray-100 border border-gray-200 text-gray-800 text-lg font-mono font-bold rounded-xl tracking-wider select-all shadow-inner">
+              0459000000000000000
+            </div>
+            <input type="hidden" id="idgis_val" value="0459000000000000000">
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: MORFOLOGÍA Y USOS -->
+      <section id="tab-section-2" class="tab-section hidden space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 border-b pb-2">2. Morfología, Usos y Rasgos</h2>
+        
+        <!-- Contenedor collapsible: Estado de conservación -->
+        <details open class="group bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200">
+          <summary class="flex justify-between items-center p-4 font-bold text-gray-700 cursor-pointer hover:bg-gray-50">
+            <span>Estado general a la vista</span>
+          </summary>
+          <div class="p-4 border-t border-gray-100 bg-gray-50/50">
+            <label class="block text-sm font-medium text-gray-600 mb-1">Evaluación Exterior</label>
+            <select id="estado_vista" class="w-full p-2.5 border rounded-lg bg-white focus:ring-2 focus:ring-green-500">
+              <option value="" disabled selected>Seleccionar...</option>
+              <option value="Bueno">Bueno</option>
+              <option value="Regular">Regular</option>
+              <option value="Malo">Malo</option>
+              <option value="Ruinoso">Ruinoso</option>
+            </select>
+          </div>
+        </details>
+
+        <!-- Contenedor collapsible: Usos Actuales -->
+        <details class="group bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200">
+          <summary class="flex justify-between items-center p-4 font-bold text-gray-700 cursor-pointer hover:bg-gray-50">
+            <span>Usos Actuales</span>
+          </summary>
+          <div class="p-4 border-t border-gray-100 checkbox-container bg-gray-50/50">
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_residencial"> Residencial</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_comercial"> Comercial</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_salud"> Salud</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_administrativo"> Administrativo</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_educativo"> Educativo</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_religioso"> Religioso</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_industrial"> Industrial</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_social"> Social</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_deportivo"> Deportivo</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_hotelero"> Hotelero</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_act_deposito"> Depósito</label>
+          </div>
+        </details>
+
+        <!-- Contenedor collapsible: Usos Pasados -->
+        <details class="group bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200">
+          <summary class="flex justify-between items-center p-4 font-bold text-gray-700 cursor-pointer hover:bg-gray-50">
+            <span>Usos Pasados</span>
+          </summary>
+          <div class="p-4 border-t border-gray-100 checkbox-container bg-gray-50/50">
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_residencial"> Residencial</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_comercial"> Comercial</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_salud"> Salud</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_administrativo"> Administrativo</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_educativo"> Educativo</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_religioso"> Religioso</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_industrial"> Industrial</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_social"> Social</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_deportivo"> Deportivo</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_hotelero"> Hotelero</label>
+            <label class="checkbox-label"><input type="checkbox" id="uso_pas_deposito"> Depósito</label>
+          </div>
+        </details>
+
+        <!-- Contenedor collapsible: Rasgos Estilísticos -->
+        <details id="tab2-rasgos" class="group bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200">
+          <summary class="flex justify-between items-center p-4 font-bold text-gray-700 cursor-pointer hover:bg-gray-50">
+            <span>Rasgos Estilísticos</span>
+          </summary>
+          <div class="p-4 border-t border-gray-100 checkbox-container bg-gray-50/50">
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_academicista"> Academicista</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_italianizante"> Italianizante</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_eclectico"> Ecléctico</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_pintoresquista"> Pintoresquista</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_art_nouveau"> Art Nouveau</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_art_deco"> Art Déco</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_art_deco_nautico"> Art Déco Náutico / Streamline</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_racionalismo_transicion"> Racionalismo de Transición</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_racionalista_moderno"> Racionalista/Movimiento Moderno</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_brutalista"> Brutalista</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_neocolonial"> Neocolonial</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_casablanquismo"> Casablanquismo</label>
+            <label class="checkbox-label"><input type="checkbox" id="rasgo_vernaculo"> Vernáculo</label>
+          </div>
+        </details>
+
+        <!-- Contenedor collapsible: Tipología -->
+        <details id="tab2-tipologia" class="group bg-white border border-gray-200 rounded-xl overflow-hidden transition-all duration-200">
+          <summary class="flex justify-between items-center p-4 font-bold text-gray-700 cursor-pointer hover:bg-gray-50">
+            <span>Tipología edilicia</span>
+          </summary>
+          <div class="p-4 border-t border-gray-100 checkbox-container bg-gray-50/50">
+            <label class="checkbox-label"><input type="checkbox" id="tipo_vivienda"> Vivienda</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_geminada"> Geminada</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_casa_chorizo"> Casa de medio Patio/casa Chorizo</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_petit_hotel"> Petit Hotel</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_departamentos"> Departamentos</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_casa_cajon"> Casa Cajón</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_chalet"> Chalet</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_culto"> Culto</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_educativo"> Educativo</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_cine_teatro"> Cine/Teatro</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_hospital_sanatorio"> Hospital/Sanatorio</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_industrial_ferrocarril"> Industrial/Ferrocarril</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_usina"> Usina</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_mercado"> Mercado</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_garaje"> Garaje</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_una_planta"> Una planta</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_en_altura"> En altura</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_con_retiro"> Con retiro</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_sin_retiro"> Sin retiro</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_exenta"> Exenta</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_entre_medianeras"> Entre medianeras</label>
+            <label class="checkbox-label"><input type="checkbox" id="tipo_en esquina"> En esquina</label>
+          </div>
+        </details>
+      </section>
+
+      <!-- TAB 3: TECNOLOGÍA CONSTRUCTIVA / MATERIALIDAD -->
+      <section id="tab-section-3" class="tab-section hidden space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 border-b pb-2">3. Tecnología Constructiva y Materialidad</h2>
+        <p class="text-xs text-gray-500 italic">Dimensión Estructural: Registro bajo supuesto técnico a la vista desde el exterior.</p>
+        
+        <div id="tab3" class="space-y-6">
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Muros y Revestimientos</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="muro_ladrillo_revocado"> Ladrillos revocados</label>
+              <label class="checkbox-label"><input type="checkbox" id="muro_ladrillo_sin_revocar"> Ladrillos sin revocar</label>
+              <label class="checkbox-label"><input type="checkbox" id="muro_mamposteria_oculta"> Mampostería no visible / Oculta por revestimiento</label>
+              <label class="checkbox-label"><input type="checkbox" id="muro_revoque_simil_piedra"> Revoque símil piedra / Piedra París</label>
+              <label class="checkbox-label"><input type="checkbox" id="muro_revestimiento_petreo"> Revestimientos pétreos</label>
+              <label class="checkbox-label"><input type="checkbox" id="muro_revestimiento_ceramico"> Revestimientos Cerámicos</label>
+              <label class="checkbox-label"><input type="checkbox" id="muro_tradicional_madera"> Tradicional de madera</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Aberturas y Herrería</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="aberturas_madera"> Aberturas de madera</label>
+              <label class="checkbox-label"><input type="checkbox" id="aberturas_metal"> Aberturas de metal</label>
+              <label class="checkbox-label"><input type="checkbox" id="aberturas_herreria"> Herrería artística (Balcones, Rejas)</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Estructura</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="est_muros_portantes"> Muros portantes (Mampostería)</label>
+              <label class="checkbox-label"><input type="checkbox" id="est_independiente"> Estructura independiente (Hormigón Armado)</label>
+              <label class="checkbox-label"><input type="checkbox" id="est_metalica"> Estructura metálica (Columnas/Perfiles)</label>
+              <label class="checkbox-label"><input type="checkbox" id="est_madera"> Estructura de madera</label>
+              <label class="checkbox-label"><input type="checkbox" id="est_no_visible"> Estructura no visible / Inferida</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Cubierta</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="cubierta_azotea"> Azotea plana (Oculta tras parapeto)</label>
+              <label class="checkbox-label"><input type="checkbox" id="cubierta_tejas_espanolas"> Cubierta de tejas Españolas / Coloniales</label>
+              <label class="checkbox-label"><input type="checkbox" id="cubierta_tejas_francesas"> Cubierta de tejas Francesas</label>
+              <label class="checkbox-label"><input type="checkbox" id="cubierta_chapas"> Cubierta de chapas metálicas (Zinc / Hierro)</label>
+              <label class="checkbox-label"><input type="checkbox" id="cubierta_fibrocemento"> Cubierta de fibrocemento</label>
+              <label class="checkbox-label"><input type="checkbox" id="cubierta_pizarra"> Cubierta de tejas pizarra</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Pisos y Solias Visibles</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="pisos_calcarios"> Mosaicos Calcáreos (en zaguán/galería/balcón)</label>
+              <label class="checkbox-label"><input type="checkbox" id="pisos_graniticos"> Mosaicos Graníticos</label>
+              <label class="checkbox-label"><input type="checkbox" id="pisos_ceramicos"> Cerámicos / Gres</label>
+              <label class="checkbox-label"><input type="checkbox" id="pisos_madera"> Entablonado de madera</label>
+              <label class="checkbox-label"><input type="checkbox" id="pisos_umbrales"> Umbrales y peldaños pétreos (Mármol / Piedra)</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: PATOLOGÍAS EXTERIORES VISIBLES -->
+      <section id="tab-section-4" class="tab-section hidden space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 border-b pb-2">4. Patologías Exteriores Visibles</h2>
+        
+        <div id="tab4" class="space-y-6">
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Biodeterioro - Vegetación Invasiva</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="bio_musgo"> Musgo</label>
+              <label class="checkbox-label"><input type="checkbox" id="bio_moho"> Moho</label>
+              <label class="checkbox-label"><input type="checkbox" id="bio_liquenes"> Líquenes</label>
+              <label class="checkbox-label"><input type="checkbox" id="bio_helechos"> Helechos</label>
+              <label class="checkbox-label"><input type="checkbox" id="bio_higueron"> Higuerón</label>
+              <label class="checkbox-label"><input type="checkbox" id="bio_ambay"> Ambay</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Suciedad</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="suciedad_aves"> Excrementos de aves</label>
+              <label class="checkbox-label"><input type="checkbox" id="suciedad_polvo"> Manchas por polvo y polución</label>
+              <label class="checkbox-label"><input type="checkbox" id="suciedad_costra"> Costra Negra</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Paramentos Exteriores</h3>
+            <div class="checkbox-container mb-4">
+              <label class="checkbox-label"><input type="checkbox" id="param_fisuras"> Fisuras superficiales</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_grietas"> Grietas</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_desprendimiento"> Desprendimientos de revoque</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_faltante_ornamento"> Faltantes de piezas ornamentales</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_pintura_descascarada"> Pintura Descascarada</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_pintura_ampollada"> Pintura Ampollada</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_pintura_cuarteada"> Pintura Cuarteada</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_grafitis"> Grafitis y pegatinas</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_pintura_simil_piedra"> Pintura sobre revoque símil piedra</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_revoque_plastico"> Revoques plásticos texturados</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_parches_cementicios"> Parches cementicios</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_muros_fuera_plomada"> Muros fuera de plomada</label>
+              <label class="checkbox-label"><input type="checkbox" id="param_eflorescencias"> Eflorescencias cristalizadas</label>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-gray-100">
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Humedad ascendente</label>
+                <select id="hum_ascendente" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500">
+                  <option value="No apreciable">No apreciable</option>
+                  <option value="Sí apreciable">Sí apreciable</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-600 mb-1">Humedad descendente</label>
+                <select id="hum_descendente" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500">
+                  <option value="No">No</option>
+                  <option value="Sí">Sí</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Metales</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="metales_oxido"> Óxido Superficial</label>
+              <label class="checkbox-label"><input type="checkbox" id="metales_corrosion"> Corrosión generalizada</label>
+              <label class="checkbox-label"><input type="checkbox" id="metales_faltantes"> Faltantes o partes irrecuperables</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Maderas de Aberturas Exteriores</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="mad_ab_resecamiento"> Resecamiento</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_ab_piezas_faltantes"> Piezas Faltantes</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_ab_xilofagos"> Ataque de xilófagos</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_ab_descom_localizada"> Descomposición localizada</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_ab_descom_general"> Descomposición generalizada</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Maderas de Estructuras visibles</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="mad_est_resecamiento"> Resecamiento</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_est_piezas_faltantes"> Piezas Faltantes</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_est_xilofagos"> Ataque de xilófagos</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_est_descom_localizada"> Descomposición localizada</label>
+              <label class="checkbox-label"><input type="checkbox" id="mad_est_descom_general"> Descomposición generalizada</label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: INTERVENCIONES EXTERNAS Y NOTAS -->
+      <section id="tab-section-5" class="tab-section hidden space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 border-b pb-2">5. Intervenciones Externas y Observaciones</h2>
+        
+        <div id="tab5" class="space-y-6">
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Modificaciones Visibles en Fachada</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="modif_ampliacion_entrepiso"> Ampliaciones visibles (De superficie por entrepiso)</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_ampliacion_volumen"> Ampliaciones visibles (por anexión de volumen)</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_sustitucion_aberturas"> Sustitución de aberturas originales</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_ampliacion_vanos"> Ampliación o apertura de vanos</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_nuevas_rejas"> Nuevas rejas o cerramientos</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_modificaciones_cubierta"> Modificaciones en cubierta</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_cambio_color"> Cambio de color o revestimiento</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_sustitucion_parcial"> Sustitución de la fachada original (Parcial)</label>
+              <label class="checkbox-label"><input type="checkbox" id="modif_sustitucion_total"> Sustitución de la fachada original (Total)</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Componentes no originales</h3>
+            <div class="checkbox-container">
+              <label class="checkbox-label"><input type="checkbox" id="comp_equipos_aire"> Equipos de aire</label>
+              <label class="checkbox-label"><input type="checkbox" id="comp_insertos_metalicos"> insertos metálicos</label>
+              <label class="checkbox-label"><input type="checkbox" id="comp_cables_superpuestos"> cables superpuestos</label>
+              <label class="checkbox-label"><input type="checkbox" id="comp_toldos"> toldos</label>
+              <label class="checkbox-label"><input type="checkbox" id="comp_carteles"> carteles invasivos</label>
+              <label class="checkbox-label"><input type="checkbox" id="comp_marquesinas"> marquesinas añadidas</label>
+            </div>
+          </div>
+
+          <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h3 class="font-bold text-gray-700 text-sm mb-3 uppercase tracking-wider">Síntesis Descriptiva y Observaciones</h3>
+            <div class="relative">
+              <textarea id="observaciones" maxlength="3000" rows="6" 
+                class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500 text-sm"
+                placeholder="Ejemplo: Casa de un piso con jardín al frente, techo de chapa a la vista y puerta central de madera. Se observa acumulación de escombros en la vereda."></textarea>
+              <div class="text-right text-xs text-gray-400 mt-1" id="char-counter-observaciones">
+                0 / 3000 caracteres
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: REGISTRO MULTIMEDIA Y DOCUMENTAL -->
+      <section id="tab-section-6" class="tab-section hidden space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 border-b pb-2">6. Registro Multimedia y Documental</h2>
+        
+        <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-6">
+          <div>
+            <h3 class="font-bold text-gray-700 text-sm mb-1 uppercase tracking-wider">Sección Campo</h3>
+            <p class="text-xs text-gray-500 mb-4">Captura directa de imágenes desde la cámara o almacenamiento local.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Foto 1 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">1. Fachada Principal</label>
+                <input type="file" accept="image/*" class="file-uploader w-full text-xs" data-index="159" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-159"></div>
+              </div>
+              <!-- Foto 2 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">2. Detalle Fachada</label>
+                <input type="file" accept="image/*" class="file-uploader w-full text-xs" data-index="160" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-160"></div>
+              </div>
+              <!-- Foto 3 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">3. Patología Singular</label>
+                <input type="file" accept="image/*" class="file-uploader w-full text-xs" data-index="161" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-161"></div>
+              </div>
+              <!-- Foto 4 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">4. Contexto Urbano</label>
+                <input type="file" accept="image/*" class="file-uploader w-full text-xs" data-index="162" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-162"></div>
+              </div>
+              <!-- Foto 5 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">5. Registro Extra 1</label>
+                <input type="file" accept="image/*" class="file-uploader w-full text-xs" data-index="163" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-163"></div>
+              </div>
+              <!-- Foto 6 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">6. Registro Extra 2</label>
+                <input type="file" accept="image/*" class="file-uploader w-full text-xs" data-index="164" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-164"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 border-t border-gray-100">
+            <h3 class="font-bold text-gray-700 text-sm mb-1 uppercase tracking-wider">Sección Gabinete / Históricos</h3>
+            <p class="text-xs text-gray-500 mb-4">Adjuntos complementarios de investigación.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- Foto 7 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">7. Fotos Históricas</label>
+                <input type="file" class="file-uploader w-full text-xs" data-index="165" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-165"></div>
+              </div>
+              <!-- Foto 8 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">8. Planos Técnicos</label>
+                <input type="file" class="file-uploader w-full text-xs" data-index="166" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-166"></div>
+              </div>
+              <!-- Foto 9 -->
+              <div class="p-3 border rounded-lg bg-gray-50">
+                <label class="block text-xs font-bold text-gray-600 uppercase mb-1">9. Historial / PDFs</label>
+                <input type="file" class="file-uploader w-full text-xs" data-index="167" onchange="processFile(this)">
+                <div class="thumbnail-preview mt-2 hidden" id="preview-167"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: HISTORIA Y MEMORIA -->
+      <section id="tab-section-7" class="tab-section hidden space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 border-b pb-2">7. Historia, Memoria y Finalización</h2>
+        
+        <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+          <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wider">Datos de Habitantes</h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Propietarios/habitantes pasados</label>
+              <textarea id="prop_pasados" maxlength="3000" rows="3" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500 text-sm" placeholder="Detalle propietarios históricos..."></textarea>
+              <div class="text-right text-xs text-gray-400 mt-1" id="char-counter-prop_pasados">0 / 3000 caracteres</div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Propietarios Actuales</label>
+              <textarea id="prop_actuales" maxlength="3000" rows="3" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500 text-sm" placeholder="Detalle propietarios de registro catastral vigente..."></textarea>
+              <div class="text-right text-xs text-gray-400 mt-1" id="char-counter-prop_actuales">0 / 3000 caracteres</div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Otros habitantes conocidos</label>
+              <textarea id="otros_habitantes" maxlength="3000" rows="3" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500 text-sm" placeholder="Inquilinos notables, comercios históricos, etc..."></textarea>
+              <div class="text-right text-xs text-gray-400 mt-1" id="char-counter-otros_habitantes">0 / 3000 caracteres</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl border border-gray-200 space-y-4">
+          <h3 class="font-bold text-gray-700 text-sm uppercase tracking-wider">Historiografía y Valoración Social</h3>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Evolución edilicia cronológica / transformaciones históricas</label>
+              <textarea id="evolucion_edilicia" maxlength="3000" rows="3" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500 text-sm" placeholder="Ej: Agregado de marquesina comercial en 1980, demolición de pináculo en 1995..."></textarea>
+              <div class="text-right text-xs text-gray-400 mt-1" id="char-counter-evolucion_edilicia">0 / 3000 caracteres</div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-600 mb-1">Antecedentes históricos culturales y memoria colectiva</label>
+              <textarea id="antecedentes_historicos" maxlength="3000" rows="3" class="w-full p-2.5 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-green-500 text-sm" placeholder="Anécdotas del vecindario, eventos históricos ocurridos en la finca..."></textarea>
+              <div class="text-right text-xs text-gray-400 mt-1" id="char-counter-antecedentes_historicos">0 / 3000 caracteres</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BOTÓN ÚNICO DE GUARDADO TRANSPARENTE AL FINAL DEL FORMULARIO -->
+      <div class="p-4 bg-gray-100 rounded-xl border border-gray-200 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div class="flex gap-2">
+          <button type="button" id="prev-btn" onclick="navigationStep(-1)" class="px-5 py-3 text-sm font-semibold rounded-lg border bg-white hover:bg-gray-50 text-gray-700 transition">Anterior</button>
+          <button type="button" id="next-btn" onclick="navigationStep(1)" class="px-5 py-3 text-sm font-semibold rounded-lg border bg-white hover:bg-gray-50 text-gray-700 transition">Siguiente</button>
+        </div>
+        <button type="submit" class="w-full md:w-auto px-8 py-4 bg-[#009639] hover:bg-[#007a2e] text-white font-bold rounded-xl shadow-md transition transform active:scale-95 text-center">
+          Finalizar y Guardar Relevamiento
+        </button>
+      </div>
+
+    </form>
+  </main>
+
+  <!-- GLOSARIO MODAL CENTRAL -->
+  <div id="glossary-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/60" onclick="closeGlossaryModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full mx-4 p-6 z-10 border border-gray-100 max-h-[85vh] overflow-y-auto">
+      <h3 id="glossary-title" class="text-xl font-bold text-gray-800 mb-3 border-b pb-2">Glosario Informativo</h3>
+      <p id="glossary-content" class="text-gray-600 mb-6 text-sm leading-relaxed whitespace-pre-line"></p>
+      <div class="flex justify-end">
+        <button type="button" onclick="closeGlossaryModal()" class="px-5 py-2.5 bg-[#009639] hover:bg-[#007a2e] text-white font-semibold rounded-xl transition text-sm">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENEDOR DE TOAST NOTIFICATIONS (No invasivo) -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- MOTOR DE PERSISTENCIA, SINCRONIZACIÓN Y CONTROLES JS -->
+  <script>
+    // CONFIGURACIÓN GLOBAL OBLIGATORIA
+    const CONFIG = {
+      DRIVE_ROOT_FOLDER_ID: '1lpx6As64FTtwHwVZtMwkJofk8MsrzxqV',
+      SHEET_ID: '1PZqfQAW090mSwxipTQMGMw8_J_uEasElrF2c4q2TzEw',
+      SHEET_TAB_NAME: 'Base_de_datos_Patrimonial',
+      GAS_URL: 'https://script.google.com/macros/s/AKfycbyr-wUdgUpWk_I1mC8agmXhHsveLVDFkBVDMRp1o8q3HoaEPXWYtkSfAOeqv7xgdo1F'
+    };
+
+    // Glosario cargado con el diccionario completo hasta la Fase 4
+    const glosarioDiccionario = {
+      // --- Rasgos Estilísticos (TAB 2) ---
+      "Academicista": "Corriente inspirada en las reglas formales de las Academias de Bellas Artes europeas. Se caracteriza por la simetría rigurosa, modulación clásica, jerarquía de accesos y uso de órdenes arquitectónicos grecorromanos.",
+      "Italianizante": "Variante del eclecticismo inspirada en el renacimiento italiano (siglo 19). Presenta cornisamento pronunciado, aberturas con arco de medio punto, balaustradas, pilastras adosadas y plantas compactas tipo villa.",
+      "Ecléctico": "Combinación libre de lenguajes históricos (neogótico, neorrománico, clasicismo) en un mismo edificio. Surge a fines del siglo 19 buscando adaptar estéticas del pasado a las nuevas necesidades urbanas.",
+      "Pintoresquista": "Estilo de origen anglo-germánico que busca la integración armónica con la naturaleza. Destaca por volumetrías asimétricas, techos de fuerte pendiente, pináculos, bow-windows y uso visible de piedra y madera.",
+      "Art Nouveau": "Estilo ornamental de transición hacia la modernidad (fines del siglo 19 y principios del 20). Se caracteriza por líneas curvas de inspiración orgánica, motivos florales, latigazos asimétricos y el uso innovador del hierro y el vidrio.",
+      "Art Déco": "Movimiento geométrico e industrial de las décadas de 1920 y 1930. Se expresa mediante líneas rectas, zigzag, escalonamientos, estilizado de flora/fauna, y realce ornamental en fachadas y portales.",
+      "Art Déco Náutico / Streamline": "Evolución tardía del Art Déco inspirada en la aerodinámica del transporte de entreguerras. Destaca por esquinas curvas redondeadas, ventanas circulares (tipo ojo de buey), barandas náuticas y bandas horizontales continuas.",
+      "Racionalismo de Transición": "Etapa híbrida donde persisten elementos compositivos clásicos (simetría, basamento) pero se depura la ornamentación en favor de superficies lisas y pureza volumétrica racional.",
+      "Racionalista/Movimiento Moderno": "Arquitectura basada en el funcionalismo y despojo total de ornamento. Sigue postulados del racionalismo internacional: ventanas horizontales, estructura independiente, fachadas libres y terrazas jardín.",
+      "Brutalista": "Derivación del Movimiento Moderno (mediados del siglo 20) caracterizada por el uso expresivo y monumental del hormigón visto ('béton brut'), mostrando las texturas del encofrado y la sinceridad de las instalaciones.",
+      "Neocolonial": "Estilo de corte identitario e hispanoamericano que recupera elementos barrocos, coloniales españoles y platerescos: portadas labradas, tejas musleras, rejas de hierro forjado y muros revocados de textura rústica.",
+      "Casablanquismo": "Corriente de la segunda mitad del siglo 20 inspirada en la arquitectura mediterránea y colonial vernácula. Se caracteriza por el uso de volúmenes puros encalados (blancos), texturas rústicas de revoque, arcos y aberturas de madera.",
+      "Vernáculo": "Arquitectura construida por idóneos de la comunidad utilizando técnicas tradicionales y materiales del lugar. Diseñada para responder directamente a las condicionantes climáticas y funcionales locales sin seguir estilos académicos rígidos.",
+
+      // --- Tipologías (TAB 2) ---
+      "Vivienda": "Espacio diseñado principalmente para el albergue residencial unifamiliar.",
+      "Geminada": "Tipología compuesta por dos viviendas idénticas o simétricas que comparten un muro divisorio central (medianera común), manteniendo accesos y parcelas independientes.",
+      "Casa de medio Patio/casa Chorizo": "Organización espacial típica rioplatense donde las habitaciones se suceden en hilera en torno a un patio lateral alargado al que ventilan directamente. Suele contar con una galería de transición.",
+      "Petit Hotel": "Residencia urbana aristocrática de varias plantas inspirada en los 'hôtels particuliers' franceses, de acceso jerarquizado, piano nobile y remate de mansarda.",
+      "Departamentos": "Edificio multifamiliar compuesto por unidades habitacionales independientes agrupadas de forma vertical u horizontal que comparten áreas comunes y servicios.",
+      "Casa Cajón": "Tipología de vivienda económica y funcional típica de mediados del siglo 20 en Argentina, de planta cuadrada o rectangular compacta, techos planos o a dos aguas sencillos y sin galerías profundas.",
+      "Chalet": "Residencia unifamiliar exenta o con retiro, de volumetría pintoresca, techos de tejas inclinados con aleros, porche de acceso y rodeada de jardín.",
+      "Culto": "Espacio religioso diseñado para el desarrollo de ritos eclesiásticos (iglesias, capillas, templos, sinagogas).",
+      "Educativo": "Establecimiento destinado a la enseñanza formal (escuelas, colegios, institutos).",
+      "Cine/Teatro": "Tipología recreativa de gran escala caracterizada por una sala principal de espectáculos con plateas, escenario, camarines y un vestíbulo jerárquico de acceso.",
+      "Hospital/Sanatorio": "Instalación de salud organizada por pabellones o bloques funcionales, con requerimientos higiénico-sanitarios estrictos para la internación y tratamiento médico.",
+      "Industrial/Ferrocarril": "Edificaciones asociadas a la producción manufacturera o al transporte ferroviario (estaciones, galpones de acopio, talleres, depósitos de locomotoras).",
+      "Usina": "Planta industrial destinada a la generación de energía eléctrica o bombeo de agua, caracterizada por salas de máquinas de doble altura y chimeneas.",
+      "Mercado": "Gran espacio cubierto destinado a la comercialización y abasto de alimentos, estructurado mediante naves con ventilación cenital.",
+      "Garaje": "Edificio destinado exclusivamente a la guarda y estacionamiento de vehículos.",
+      "Una planta": "Finca construida únicamente en nivel de planta baja.",
+      "En altura": "Estructura edilicia multifamiliar o corporativa que cuenta con tres o más niveles sobre el nivel del suelo.",
+      "Con retiro": "Finca cuya fachada se encuentra distanciada de la línea municipal oficial, generando un espacio de transición o jardín frontal.",
+      "Sin retiro": "Edificación implantada directamente sobre la línea municipal catastral, sin espacio intermedio de jardín o vereda privada.",
+      "Exenta": "Edificio aislado en su lote, sin apoyos en muros colindantes, con sus cuatro fachadas expuestas al perímetro libre.",
+      "Entre medianeras": "Edificación limitada lateralmente por muros divisorios compartidos con los lotes vecinos.",
+      "En esquina": "Finca ubicada en la intersección de dos calles, caracterizada por poseer dos fachadas públicas expuestas a la vía urbana.",
+
+      // --- Materialidad (TAB 3) ---
+      "Ladrillos revocados": "Muros de mampostería revestidos con capas de mortero (revoque grueso y fino) para proteger la superficie de ladrillo común.",
+      "Ladrillos sin revocar": "Fábrica de ladrillos comunes expuestos a la vista, asentados con mezcla, donde el propio ladrillo cumple función estructural y ornamental de terminación externa.",
+      "Mampostería no visible / Oculta por revestimiento": "Estructura portante exterior tapada en su totalidad por placas cerámicas, pétreas, metálicas u otros materiales de acabado contemporáneos.",
+      "Revoque símil piedra / Piedra París": "Revestimiento artesanal continuo compuesto por cemento, cal, arena fina y micas que imita la textura y despiece de bloques de piedra natural esculpida.",
+      "Revestimientos pétreos": "Placas de piedra natural (mármol, granito, laja) aplicadas sobre el muro portante como terminación decorativa y de protección contra la intemperie.",
+      "Revestimientos Cerámicos": "Piezas esmaltadas o rústicas de arcilla cocida (azulejos, gres, tejuelas) fijadas al muro con mortero adhesivo.",
+      "Tradicional de madera": "Muros exteriores ejecutados con entramado de madera o tablas superpuestas tipo 'balloon frame', común en construcciones históricas regionales.",
+      "Aberturas de madera": "Marcos y hojas de ventanas, puertas y postigos ejecutados en maderas nativas o implantadas.",
+      "Aberturas de metal": "Marcos e infraestructuras de carpintería fabricadas en perfiles de hierro, acero, aluminio o bronce.",
+      "Herrería artística (Balcones, Rejas)": "Elementos metálicos de protección u ornato trabajados artesanalmente mediante forja caliente o fundición artística.",
+      "Muros portantes (Mampostería)": "Sistema constructivo tradicional donde los muros de ladrillo o piedra reciben y transmiten las cargas de la cubierta y entrepisos directo al cimiento.",
+      "Estructura independiente (Hormigón Armado)": "Esqueleto estructural de columnas, vigas y losas de hormigón de cemento reforzado con acero que soporta las cargas totales del edificio, liberando a los muros de la función portante.",
+      "Estructura metálica (Columnas/Perfiles)": "Sistema de pórticos o columnas y vigas de perfiles de acero estructural laminado de alta resistencia.",
+      "Estructura de madera": "Entramado portante ejecutado mediante vigas, columnas y cabriadas de madera natural dura o semi-dura.",
+      "Estructura no visible / Inferida": "Soporte estructural del edificio que no se encuentra expuesto al exterior ni puede determinarse visualmente con exactitud en la inspección superficial.",
+      "Azotea plana (Oculta tras parapeto)": "Cubierta horizontal transitable o no transitable, resguardada de la vista pública de fachada mediante muros parapetos o cargas.",
+      "Cubierta de tejas Españolas / Coloniales": "Techo inclinado resuelto con tejas cerámicas curvas de sección troncocónica (teja canal y cobija).",
+      "Cubierta de tejas Francesas": "Techo inclinado resuelto con tejas cerámicas planas mecánicas de encastre lateral e inferior.",
+      "Cubierta de chapas metálicas (Zinc / Hierro)": "Techo resuelto con placas acanaladas o sinusoidales de metal galvanizado o prepintado sobre estructura de sostén de perfiles o tirantes.",
+      "Cubierta de fibrocemento": "Chapas onduladas compuestas por cemento y fibras de refuerzo mineral o sintético.",
+      "Cubierta de tejas pizarra": "Techo inclinado resuelto con placas planas de roca pizarra natural o de terminación sintética similar cortadas geométricamente.",
+      "Mosaicos Calcáreos (en zaguán/galería/balcón)": "Pisos artesanales bicapa cementicios prensados en frío con motivos decorativos coloridos impresos con trepas metálicas.",
+      "Mosaicos Graníticos": "Baldosas pulidas fabricadas con cemento y fragmentos de granito o mármol triturado, caracterizadas por su alta resistencia al desgaste.",
+      "Cerámicos / Gres": "Piso de baldosas de arcilla cocida, esmaltada o natural, de variada resistencia mecánica.",
+      "Entablonado de madera": "Piso resuelto con tablas de madera machihembradas fijadas sobre tirantes de soporte de madera asentados en el suelo.",
+      "Umbrales y peldaños pétreos (Mármol / Piedra)": "Elementos de transición y acceso a aberturas y escaleras ejecutados en bloques de mármol de Carrara u otras piedras naturales de alta densidad.",
+
+      // --- Patologías Exteriores Visibles (TAB 4) ---
+      "Musgo": "Planta briófita que crece en zonas húmedas y sombrías, reteniendo agua sobre el sustrato y acelerando la degradación química de revoques y mamposterías.",
+      "Moho": "Hongo microscópico que se desarrolla en paramentos con humedad persistente, generando manchas oscuras (negras, grises, verdosas) y degradando las pinturas y aglomerantes superficiales.",
+      "Líquenes": "Organismo simbiótico (alga-hongo) que se adhiere fuertemente al sustrato mineral. Sus ácidos liquénicos corroen químicamente los componentes aglutinantes de piedras y revoques.",
+      "Helechos": "Plantas vasculares sin semillas que colonizan grietas y fisuras profundas. Sus raíces ejercen presión mecánica (bioclastia), ensanchando las aberturas estructurales.",
+      "Higuerón": "Especie arbórea de raíces sumamente agresivas que penetra en juntas y grietas de muros históricos, provocando empujes mecánicos severos y riesgo inminente de colapso de mamposterías.",
+      "Ambay": "Árbol nativo que coloniza paramentos deteriorados con alta retención de humedad. Sus raíces causan severas fracturas mecánicas en las estructuras de soporte de mampostería.",
+      "Excrementos de aves": "Depósitos orgánicos altamente ácidos que erosionan químicamente las superficies de piedra, revoques y metales, además de actuar como vehículo de humedad y esporas fúngicas.",
+      "Manchas por polvo y polución": "Acumulación de partículas sólidas en suspensión (hollín, tierra) depositadas por escurrimiento pluvial o viento, alterando el color y obturando la porosidad natural del material.",
+      "Costra Negra": "Capa compacta oscura formada por la reacción química de contaminantes atmosféricos (dióxido de azufre) con el carbonato de calcio de revoques o piedras calizas, provocando disgregación subyacente.",
+      "Fisuras superficiales": "Aberturas lineales con espesor menor a 1 mm que afectan únicamente a la capa de terminación (pintura o enlucido fino) sin comprometer el soporte estructural.",
+      "Grietas": "Fracturas lineales con espesor mayor a 1 mm que atraviesan todo el espesor del revoque o elemento estructural, denotando movimientos o fallas dinámicas subyacentes.",
+      "Desprendimientos de revoque": "Pérdida de adherencia y posterior caída física de capas de mortero (fino, grueso o ambos) debido a filtraciones de humedad, vibraciones o envejecimiento de ligantes.",
+      "Faltantes de piezas ornamentales": "Ausencia parcial o total de elementos decorativos aplicados (molduras, cornisas, ménsulas, capiteles) debido a procesos avanzados de disgregación o desprendimiento mecánico.",
+      "Pintura Descascarada": "Falla de adherencia del film de pintura que se desprende en forma de escamas secas, dejando expuesto el revoque base debido a humedad, incompatibilidad química o radiación solar.",
+      "Pintura Ampollada": "Formación de burbujas en la película de pintura por la evaporación de agua o solventes atrapados bajo el film, indicando presencia de humedad activa en el soporte.",
+      "Pintura Cuarteada": "Red de fisuras finas cruzadas sobre la película de pintura, originadas por la pérdida de elasticidad del material debido al envejecimiento y la exposición a ciclos térmicos.",
+      "Grafitis y pegatinas": "Alteraciones antrópicas superficiales por aplicación de pinturas en aerosol, tintas o adhesivos que manchan, obturan poros y dañan químicamente el soporte al intentar removerlos.",
+      "Pintura sobre revoque símil piedra": "Aplicación incorrecta de pinturas acrílicas o sintéticas sobre acabados cementicios históricos (como el Piedra París), anulando su permeabilidad natural al vapor de agua y acelerando su degradación interna.",
+      "Revoques plásticos texturados": "Aplicación moderna de revestimientos elastoméricos sobre fachadas históricas, lo cual bloquea la evaporación de humedad interna y desvirtúa la textura original del patrimonio.",
+      "Parches cementicios": "Reparaciones localizadas utilizando morteros de cemento Portland sobre revoques históricos de cal, generando incompatibilidades mecánicas, rigidez excesiva y acumulación de sales.",
+      "Muros fuera de plomada": "Pérdida de la verticalidad original de un paramento debido a empujes laterales, asentamientos diferenciales en cimientos o fallas estructurales graves.",
+      "Eflorescencias cristalizadas": "Depósitos de sales solubles blanquecinas en la superficie del muro, transportadas por el agua en movimiento que se evapora al llegar al exterior.",
+      "Humedad ascendente": "Ascenso de agua subterránea por capilaridad a través de los poros de cimientos y muros, manifestándose generalmente hasta 1.5 m de altura con desprendimientos, sales y manchas continuas.",
+      "Humedad descendente": "Filtración de agua pluvial desde la cubierta, canaletas, cornisas o grietas superiores que escurre hacia abajo, generando aureolas, manchas y ablandamiento de revoques.",
+      "Óxido Superficial": "Primera etapa de oxidación del hierro por contacto con oxígeno y humedad, formando una capa rojiza-marrón suelta sin pérdida significativa de sección metálica.",
+      "Corrosión generalizada": "Deterioro avanzado del metal con desprendimiento de escamas, picaduras profundas y reducción crítica de la sección del elemento estructural o de herrería.",
+      "Faltantes o partes irrecuperables": "Pérdida física de elementos de hierro o metal (barrotes de rejas, perfiles de soporte) por procesos de corrosión destructiva extrema o remoción mecánica.",
+      "Resecamiento": "Pérdida de aceites naturales y humedad de la madera debido a la exposición directa a radiación solar y ciclos térmicos, provocando agrietamiento y fragilidad extrema.",
+      "Piezas Faltantes": "Ausencia de componentes funcionales u ornamentales de carpintería de madera (tableros, molduras, secciones de marcos) debido a roturas o vandalismo.",
+      "Ataque de xilófagos": "Deterioro biótico provocado por insectos (termitas, taladros) u hongos que consumen la celulosa, dejando galerías internas y reduciendo drásticamente la resistencia estructural.",
+      "Descomposición localizada": "Pudrición de la madera restringida a sectores específicos expuestos a humedad constante (ej: umbrales, bases de marcos) por acción de hongos de pudrición.",
+      "Descomposición generalizada": "Pudrición avanzada y destructiva en la totalidad de la pieza de madera, perdiendo cohesión física y desmoronándose al tacto, requiriendo reemplazo total.",
+
+      // --- Intervenciones Externas (TAB 5) ---
+      "Ampliaciones visibles (De superficie por entrepiso)": "Construcción moderna de entrepisos metálicos, de madera u hormigón observables desde el exterior a través de los vanos principales de la fachada.",
+      "Ampliaciones visibles (por anexión de volumen)": "Adición de nuevos cuerpos edificados o plantas superiores sobre la estructura original, alterando la volumetría histórica y la escala de la finca.",
+      "Sustitución de aberturas originales": "Reemplazo de las carpinterías históricas de madera o hierro por aberturas modernas de aluminio, PVC o chapa doblada, desvirtuando el diseño y modulación de fachada.",
+      "Ampliación o apertura de vanos": "Modificación física de las dimensiones de ventanas o puertas preexistentes, o apertura de nuevos accesos sobre el muro original de fachada.",
+      "Nuevas rejas o cerramientos": "Instalación contemporánea de rejas, portones automáticos u hojas metálicas de seguridad que interfieren con la lectura formal e histórica del frente.",
+      "Modificaciones en cubierta": "Cambio del material original de techo (ej: tejas por chapa metálica prepintada) o alteración de las pendientes y alturas de las cubiertas históricas.",
+      "Cambio de color o revestimiento": "Aplicación de esquemas cromáticos discordantes o revestimientos modernos (como cerámicos o piedra artificial) sobre el acabado histórico de la fachada.",
+      "Sustitución de la fachada original (Parcial)": "Demolición o alteración severa de un sector de la fachada (planta baja modificada para comercio, pérdida de ornamentación en coronamiento) conservando el resto.",
+      "Sustitución de la fachada original (Total)": "Demolición íntegra de la fachada patrimonial original para construir una envolvente moderna, alterando por completo la identidad arquitectónica de la finca.",
+      "Equipos de aire": "Instalación de unidades exteriores de aire acondicionado de tipo split o de ventana fijados directamente sobre la mampostería o balcones de la fachada histórica.",
+      "insertos metálicos": "Presencia de ganchos, ménsulas, perfiles o clavijas metálicas ancladas en muros o molduras para soportar cableados, marquesinas o paramentos.",
+      "cables superpuestos": "Tendido caótico y desordenado de líneas eléctricas, telefónicas o de datos cruzando en forma aérea o amarrados de manera invasiva sobre las molduras del frente.",
+      "toldos": "Colocación de toldos modernos fijos o rebatibles, de lona plástica u otros materiales ajenos al lenguaje del edificio, que ocultan molduras y vanos originales.",
+      "carteles invasivos": "Letreros comerciales contemporáneos de dimensiones desmedidas o colocados de forma perjudicial sobre elementos ornamentales de valor patrimonial.",
+      "marquesinas añadidas": "Estructuras voladas modernas (de chapa, vidrio, policarbonato) adosadas sobre los accesos comerciales o zaguanes, alterando la volumetría limpia del frente."
+    };
+
+    // Estado del formulario y archivos multimedia cargados
+    let loadedFilesState = {}; 
+    let activeTabId = 1;
+
+    // Inicialización al cargar el DOM
+    document.addEventListener("DOMContentLoaded", () => {
+      // Set fecha por defecto
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('fecha_registro').value = today;
+
+      // Evento onblur autocompletado catastro
+      setupCatastroAutoZeros();
+
+      // Inyección dinámica de botones del Glosario
+      injectGlossarySystem();
+
+      // Configuración de foco móvil suavizado
+      setupAntiKeyboardFoco();
+
+      // Configuración de contadores dinámicos de texto
+      setupTextCounters();
+
+      // Inicialización de la base de datos local IndexedDB
+      initIndexedDB();
+
+      // Listener de conexión a red para sincronización transparente
+      window.addEventListener('online', syncPendingFichas);
+    });
+
+    // PWA Offline-First: Registro seguro de Service Worker previniendo fallas de protocolo blob en Sandbox
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        // Omitir registro si nos encontramos en un iframe o sandbox del visor de código
+        if (window.self !== window.top || window.location.hostname.includes('usercontent.goog')) {
+          console.log('Entorno de previsualización o iframe detectado: Se omite el Service Worker.');
+          return;
+        }
+
+        try {
+          const swCode = `
+            const CACHE_NAME = 'patrimonio-posadas-cache-v1';
+            const urlsToCache = [
+              '/',
+              'https://cdn.tailwindcss.com'
+            ];
+            self.addEventListener('install', event => {
+              event.waitUntil(
+                caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+              );
+            });
+            self.addEventListener('fetch', event => {
+              event.respondWith(
+                caches.match(event.request).then(response => response || fetch(event.request))
+              );
+            });
+          `;
+          const blob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(blob);
+          navigator.serviceWorker.register(swUrl)
+            .then(reg => console.log('Service Worker registrado correctamente.', reg))
+            .catch(err => console.warn('PWA SW err (capturado):', err));
+        } catch (e) {
+          console.warn('Registro de Service Worker no soportado en este entorno de origen:', e);
+        }
+      });
+    }
+
+    // Navegación de pestañas con desplazamiento de foco
+    function switchTab(tabIndex) {
+      activeTabId = tabIndex;
+      document.querySelectorAll('.tab-section').forEach(sec => sec.classList.add('hidden'));
+      document.getElementById(`tab-section-${tabIndex}`).classList.remove('hidden');
+
+      document.querySelectorAll('.tabs-container button').forEach(btn => {
+        btn.className = "px-4 py-2 text-sm font-semibold rounded-lg text-gray-600 border border-transparent hover:bg-gray-50";
+      });
+
+      const activeBtn = document.getElementById(`tab-btn-${tabIndex}`);
+      activeBtn.className = "px-4 py-2 text-sm font-semibold rounded-lg bg-[#e8f5e9] text-[#1b5e20] border border-[#c8e6c9]";
+      
+      // Auto-scroll horizontal suave del botón en la navegación
+      activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      
+      // Control de visibilidad de botones auxiliares de navegación
+      document.getElementById('prev-btn').style.visibility = (tabIndex === 1) ? 'hidden' : 'visible';
+      document.getElementById('next-btn').style.visibility = (tabIndex === 7) ? 'hidden' : 'visible';
+    }
+
+    // Desplazamiento por botones Anterior y Siguiente
+    function navigationStep(step) {
+      const target = activeTabId + step;
+      if (target >= 1 && target <= 7) {
+        switchTab(target);
+      }
+    }
+
+    // Configuración de Autocompletado de ceros a la izquierda
+    function setupCatastroAutoZeros() {
+      const padConfig = { seccion: 3, chacra: 4, manzana: 4, parcela: 4 };
+      document.querySelectorAll('.catastro-input').forEach(input => {
+        input.addEventListener('blur', () => {
+          const val = input.value.trim();
+          if (val !== "") {
+            const padSize = padConfig[input.id];
+            input.value = val.padStart(padSize, '0');
+          }
+          updateIDGIS();
+        });
+      });
+    }
+
+    // Generación dinámica y cálculo del IDGIS
+    function updateIDGIS() {
+      const s = document.getElementById('seccion').value.trim().padStart(3, '0');
+      const c = document.getElementById('chacra').value.trim().padStart(4, '0');
+      const m = document.getElementById('manzana').value.trim().padStart(4, '0');
+      const p = document.getElementById('parcela').value.trim().padStart(4, '0');
+      
+      const idgis = `0459${s}${c}${m}${p}`;
+      document.getElementById('idgis-badge').innerText = idgis;
+      document.getElementById('idgis_val').value = idgis;
+    }
+
+    // Foco móvil suave anti-teclado táctil
+    function setupAntiKeyboardFoco() {
+      document.querySelectorAll('input, textarea, select').forEach(element => {
+        element.addEventListener('focus', (e) => {
+          setTimeout(() => {
+            e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 300);
+        });
+      });
+    }
+
+    // Contadores de texto dinámicos
+    function setupTextCounters() {
+      document.querySelectorAll('textarea').forEach(tx => {
+        const counter = document.getElementById(`char-counter-${tx.id}`);
+        if (counter) {
+          tx.addEventListener('input', () => {
+            counter.innerText = `${tx.value.length} / 3000 caracteres`;
+          });
+        }
+      });
+    }
+
+    // Inyección de botones del glosario en los labels del DOM
+    function injectGlossarySystem() {
+      const targets = ['#tab2-rasgos', '#tab2-tipologia', '#tab3', '#tab4', '#tab5'];
+      targets.forEach(sel => {
+        const container = document.querySelector(sel);
+        if (!container) return;
+        
+        container.querySelectorAll('label').forEach(lbl => {
+          const cleanText = lbl.textContent.trim();
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'btn-glosario';
+          btn.innerText = 'i';
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openGlossaryModal(cleanText);
+          });
+          lbl.appendChild(btn);
+        });
+      });
+    }
+
+    // Modales de Glosario dinámicos
+    function openGlossaryModal(term) {
+      document.getElementById('glossary-title').innerText = term;
+      const lookupTerm = term.trim();
+      // Búsqueda robusta por coincidencia exacta, capitalizada o en minúsculas
+      const def = glosarioDiccionario[lookupTerm] 
+               || glosarioDiccionario[lookupTerm.charAt(0).toUpperCase() + lookupTerm.slice(1)] 
+               || glosarioDiccionario[lookupTerm.toLowerCase()] 
+               || "Definición no incorporada o ausente para este rasgo/término.";
+      document.getElementById('glossary-content').innerText = def;
+      document.getElementById('glossary-modal').classList.remove('hidden');
+    }
+
+    // Cierre del modal de glosario
+    function closeGlossaryModal() {
+      document.getElementById('glossary-modal').classList.add('hidden');
+    }
+
+    // Procesamiento y compresión local de imágenes vía Canvas
+    function processFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const idx = input.getAttribute('data-index');
+      const previewDiv = document.getElementById(`preview-${idx}`);
+      previewDiv.innerHTML = `<span class="text-xs text-gray-500">Procesando archivo...</span>`;
+      previewDiv.classList.remove('hidden');
+
+      if (file.type.startsWith('image/')) {
+        // Redimensionamiento y compresión en navegador para optimizar IndexedDB
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            let w = img.width;
+            let h = img.height;
+            const max = 1024; // Resolución máxima balanceada
+
+            if (w > max || h > max) {
+              if (w > h) {
+                h = Math.round((h * max) / w);
+                w = max;
+              } else {
+                w = Math.round((w * max) / h);
+                h = max;
+              }
+            }
+
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+
+            const base64 = canvas.toDataURL('image/jpeg', 0.7); // Compresión de calidad del 70%
+            loadedFilesState[idx] = {
+              index: parseInt(idx),
+              name: file.name.replace(/\.[^/.]+$/, "") + ".jpg",
+              mimeType: 'image/jpeg',
+              base64: base64
+            };
+
+            // Previsualización de imagen inmediata
+            previewDiv.innerHTML = `<img src="${base64}" class="h-20 w-auto rounded border border-gray-300 object-cover mt-1">`;
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Soporte nativo para PDFs y otros archivos sin compresión de lienzo
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          loadedFilesState[idx] = {
+            index: parseInt(idx),
+            name: file.name,
+            mimeType: file.type,
+            base64: e.target.result
+          };
+          previewDiv.innerHTML = `
+            <div class="flex items-center gap-1.5 p-1 bg-green-50 text-green-800 text-xs rounded border border-green-200">
+              <span class="font-bold">Documento:</span> ${file.name}
+            </div>`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // MOTOR DE INDEXEDDB PARA OFFLINE-FIRST
+    let db;
+    function initIndexedDB() {
+      const req = indexedDB.open("PatrimonioPosadasDB", 1);
+      req.onupgradeneeded = (e) => {
+        const database = e.target.result;
+        if (!database.objectStoreNames.contains("relevamientos")) {
+          database.createObjectStore("relevamientos", { keyPath: "id", autoIncrement: true });
+        }
+      };
+      req.onsuccess = (e) => {
+        db = e.target.result;
+        updateSyncBadge();
+        syncPendingFichas();
+      };
+      req.onerror = () => {
+        showToast("Error al inicializar base de datos local IndexedDB", "error");
+      };
+    }
+
+    // Actualizador de contador visual de fichas pendientes
+    function updateSyncBadge() {
+      if (!db) return;
+      const tx = db.transaction("relevamientos", "readonly");
+      const store = tx.objectStore("relevamientos");
+      const req = store.count();
+      req.onsuccess = () => {
+        document.getElementById('pending-count').innerText = req.result;
+      };
+    }
+
+    // Lógica al finalizar y guardar el relevamiento
+    function handleFormSubmit(event) {
+      event.preventDefault();
+
+      // Validación estricta de campos mandatorios
+      const responsable = document.getElementById('responsable').value.trim();
+      const direccion = document.getElementById('direccion').value.trim();
+      const manzana = document.getElementById('manzana').value.trim();
+      const parcela = document.getElementById('parcela').value.trim();
+
+      if (!responsable || !direccion || !manzana || !parcela) {
+        showToast("Error: Faltan completar campos obligatorios (*)", "error");
+        switchTab(1); // Redirige a localización
+        return;
+      }
+
+      const idgis = document.getElementById('idgis_val').value;
+
+      // Estructuración matricial (dataRow de 168 posiciones de acuerdo a setupSheet del GAS)
+      const dataRow = new Array(168).fill("");
+
+      // Mapeo 1 a 1 absoluto de variables
+      dataRow[0] = document.getElementById('rol_usuario').value;
+      dataRow[1] = responsable;
+      dataRow[2] = document.getElementById('fecha_registro').value;
+      dataRow[3] = document.getElementById('proyectista_original').value;
+      dataRow[4] = document.getElementById('fecha_construccion').value;
+      dataRow[5] = direccion;
+      dataRow[6] = document.getElementById('partida_inmobiliaria').value;
+      dataRow[7] = document.getElementById('seccion').value;
+      dataRow[8] = document.getElementById('chacra').value;
+      dataRow[9] = manzana;
+      dataRow[10] = parcela;
+      dataRow[11] = document.getElementById('n_finca').value;
+      dataRow[12] = idgis;
+      dataRow[13] = document.getElementById('estado_vista').value;
+
+      // Checkboxes Usos Actuales (14 - 24)
+      const listUsosAct = ['uso_act_residencial', 'uso_act_comercial', 'uso_act_salud', 'uso_act_administrativo', 'uso_act_educativo', 'uso_act_religioso', 'uso_act_industrial', 'uso_act_social', 'uso_act_deportivo', 'uso_act_hotelero', 'uso_act_deposito'];
+      listUsosAct.forEach((id, i) => { dataRow[14 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Checkboxes Usos Pasados (25 - 35)
+      const listUsosPas = ['uso_pas_residencial', 'uso_pas_comercial', 'uso_pas_salud', 'uso_pas_administrativo', 'uso_pas_educativo', 'uso_pas_religioso', 'uso_pas_industrial', 'uso_pas_social', 'uso_pas_deportivo', 'uso_pas_hotelero', 'uso_pas_deposito'];
+      listUsosPas.forEach((id, i) => { dataRow[25 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Rasgos Estilísticos (36 - 48)
+      const listRasgos = ['rasgo_academicista', 'rasgo_italianizante', 'rasgo_eclectico', 'rasgo_pintoresquista', 'rasgo_art_nouveau', 'rasgo_art_deco', 'rasgo_art_deco_nautico', 'rasgo_racionalismo_transicion', 'rasgo_racionalista_moderno', 'rasgo_brutalista', 'rasgo_neocolonial', 'rasgo_casablanquismo', 'rasgo_vernaculo'];
+      listRasgos.forEach((id, i) => { dataRow[36 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Tipologías (49 - 70)
+      const listTipos = ['tipo_vivienda', 'tipo_geminada', 'tipo_casa_chorizo', 'tipo_petit_hotel', 'tipo_departamentos', 'tipo_casa_cajon', 'tipo_chalet', 'tipo_culto', 'tipo_educativo', 'tipo_cine_teatro', 'tipo_hospital_sanatorio', 'tipo_industrial_ferrocarril', 'tipo_usina', 'tipo_mercado', 'tipo_garaje', 'tipo_una_planta', 'tipo_en_altura', 'tipo_con_retiro', 'tipo_sin_retiro', 'tipo_exenta', 'tipo_entre_medianeras', 'tipo_en esquina'];
+      listTipos.forEach((id, i) => { dataRow[49 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Muros y Revestimientos (71 - 77)
+      const listMuros = ['muro_ladrillo_revocado', 'muro_ladrillo_sin_revocar', 'muro_mamposteria_oculta', 'muro_revoque_simil_piedra', 'muro_revestimiento_petreo', 'muro_revestimiento_ceramico', 'muro_tradicional_madera'];
+      listMuros.forEach((id, i) => { dataRow[71 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Aberturas (78 - 80)
+      const listAberturas = ['aberturas_madera', 'aberturas_metal', 'aberturas_herreria'];
+      listAberturas.forEach((id, i) => { dataRow[78 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Estructura (81 - 85)
+      const listEst = ['est_muros_portantes', 'est_independiente', 'est_metalica', 'est_madera', 'est_no_visible'];
+      listEst.forEach((id, i) => { dataRow[81 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Cubierta (86 - 91)
+      const listCubierta = ['cubierta_azotea', 'cubierta_tejas_espanolas', 'cubierta_tejas_francesas', 'cubierta_chapas', 'cubierta_fibrocemento', 'cubierta_pizarra'];
+      listCubierta.forEach((id, i) => { dataRow[86 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Pisos (92 - 96)
+      const listPisos = ['pisos_calcarios', 'pisos_graniticos', 'pisos_ceramicos', 'pisos_madera', 'pisos_umbrales'];
+      listPisos.forEach((id, i) => { dataRow[92 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Biodeterioro (97 - 102)
+      const listBio = ['bio_musgo', 'bio_moho', 'bio_liquenes', 'bio_helechos', 'bio_higueron', 'bio_ambay'];
+      listBio.forEach((id, i) => { dataRow[97 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Suciedad (103 - 105)
+      const listSuc = ['suciedad_aves', 'suciedad_polvo', 'suciedad_costra'];
+      listSuc.forEach((id, i) => { dataRow[103 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Paramentos Exteriores (106 - 118)
+      const listParam = ['param_fisuras', 'param_grietas', 'param_desprendimiento', 'param_faltante_ornamento', 'param_pintura_descascarada', 'param_pintura_ampollada', 'param_pintura_cuarteada', 'param_grafitis', 'param_pintura_simil_piedra', 'param_revoque_plastico', 'param_parches_cementicios', 'param_muros_fuera_plomada', 'param_eflorescencias'];
+      listParam.forEach((id, i) => { dataRow[106 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Humedad (119 - 120)
+      dataRow[119] = document.getElementById('hum_ascendente').value;
+      dataRow[120] = document.getElementById('hum_descendente').value;
+
+      // Metales (121 - 123)
+      const listMetales = ['metales_oxido', 'metales_corrosion', 'metales_faltantes'];
+      listMetales.forEach((id, i) => { dataRow[121 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Maderas Aberturas (124 - 128)
+      const listMadAb = ['mad_ab_resecamiento', 'mad_ab_piezas_faltantes', 'mad_ab_xilofagos', 'mad_ab_descom_localizada', 'mad_ab_descom_general'];
+      listMadAb.forEach((id, i) => { dataRow[124 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Maderas Estructuras (129 - 133)
+      const listMadEst = ['mad_est_resecamiento', 'mad_est_piezas_faltantes', 'mad_est_xilofagos', 'mad_est_descom_localizada', 'mad_est_descom_general'];
+      listMadEst.forEach((id, i) => { dataRow[129 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Modificaciones fachada (134 - 142)
+      const listMod = ['modif_ampliacion_entrepiso', 'modif_ampliacion_volumen', 'modif_sustitucion_aberturas', 'modif_ampliacion_vanos', 'modif_nuevas_rejas', 'modif_modificaciones_cubierta', 'modif_cambio_color', 'modif_sustitucion_parcial', 'modif_sustitucion_total'];
+      listMod.forEach((id, i) => { dataRow[134 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Componentes no originales (143 - 148)
+      const listComp = ['comp_equipos_aire', 'comp_insertos_metalicos', 'comp_cables_superpuestos', 'comp_toldos', 'comp_carteles', 'comp_marquesinas'];
+      listComp.forEach((id, i) => { dataRow[143 + i] = document.getElementById(id).checked ? "Sí" : "No"; });
+
+      // Sintesis Descriptiva (149)
+      dataRow[149] = document.getElementById('observaciones').value.trim();
+
+      // Historia y habitantes (150 - 154)
+      dataRow[150] = document.getElementById('prop_pasados').value.trim();
+      dataRow[151] = document.getElementById('prop_actuales').value.trim();
+      dataRow[152] = document.getElementById('otros_habitantes').value.trim();
+      dataRow[153] = document.getElementById('evolucion_edilicia').value.trim();
+      dataRow[154] = document.getElementById('antecedentes_historicos').value.trim();
+
+      // Gabinete (Inyección de vacíos requerida por frontend, Índices 155 - 158)
+      dataRow[155] = "";
+      dataRow[156] = "";
+      dataRow[157] = "";
+      dataRow[158] = "";
+
+      // Convertir archivos para almacenamiento local en IndexedDB
+      const filesToSend = [];
+      for (const idx in loadedFilesState) {
+        filesToSend.push(loadedFilesState[idx]);
+      }
+
+      // Guardar incondicionalmente en IndexedDB
+      const record = {
+        idgis: idgis,
+        data: dataRow,
+        files: filesToSend
+      };
+
+      const tx = db.transaction("relevamientos", "readwrite");
+      const store = tx.objectStore("relevamientos");
+      const req = store.add(record);
+
+      req.onsuccess = () => {
+        showToast("Relevamiento guardado localmente", "success");
+        updateSyncBadge();
+        resetFormulary();
+        // Iniciar sincronización transparente inmediatamente en segundo plano
+        syncPendingFichas();
+      };
+
+      req.onerror = () => {
+        showToast("Error al almacenar el relevamiento local", "error");
+      };
+    }
+
+    // Reset completo del formulario posterior al guardado
+    function resetFormulary() {
+      document.getElementById('relevamiento-form').reset();
+      loadedFilesState = {};
+      
+      // Limpiar previews de multimedia
+      document.querySelectorAll('.thumbnail-preview').forEach(div => {
+        div.innerHTML = "";
+        div.classList.add('hidden');
+      });
+
+      // Recalcular IDGIS vacío inicial
+      updateIDGIS();
+
+      // Reset de contadores de caracteres
+      document.querySelectorAll('textarea').forEach(tx => {
+        const counter = document.getElementById(`char-counter-${tx.id}`);
+        if (counter) counter.innerText = "0 / 3000 caracteres";
+      });
+
+      // Restaurar fecha del día
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('fecha_registro').value = today;
+
+      // Volver a la pestaña inicial
+      switchTab(1);
+    }
+
+    // BACKGROUND WORKER TRANSPARENTE: Sincronización offline-first secuencial
+    let isSyncing = false;
+    async function syncPendingFichas() {
+      if (isSyncing) return;
+      if (!navigator.onLine) return; // Esperar conectividad
+
+      isSyncing = true;
+      const tx = db.transaction("relevamientos", "readonly");
+      const store = tx.objectStore("relevamientos");
+      const req = store.getAll();
+
+      req.onsuccess = async (e) => {
+        const records = e.target.result;
+        if (records.length === 0) {
+          isSyncing = false;
+          return;
+        }
+
+        for (const record of records) {
+          const success = await sendToCloud(record);
+          if (success) {
+            // Eliminar registro local si la carga fue exitosa
+            await deleteLocalRecord(record.id);
+            updateSyncBadge();
+          } else {
+            // Detener el procesamiento en caso de fallas de red/conexión
+            break;
+          }
+        }
+        isSyncing = false;
+      };
+    }
+
+    // Envío vía POST al GAS con lógica de reintentos y Exponential Backoff
+    async function sendToCloud(record) {
+      const payload = {
+        idgis: record.idgis,
+        dataRow: record.data,
+        files: record.files
+      };
+
+      let retries = 5;
+      let delay = 1000;
+
+      for (let i = 0; i < retries; i++) {
+        try {
+          const response = await fetch(CONFIG.GAS_URL, {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          const result = await response.json();
+          if (result && result.status === 'success') {
+            showToast(`Sincronizado IDGIS: ${record.idgis}`, "success");
+            return true;
+          }
+        } catch (err) {
+          // Falló el intento, aplicar retardo exponencial
+          await new Promise(resolve => setTimeout(resolve, delay));
+          delay *= 2;
+        }
+      }
+      return false;
+    }
+
+    function deleteLocalRecord(id) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction("relevamientos", "readwrite");
+        const store = tx.objectStore("relevamientos");
+        const req = store.delete(id);
+        req.onsuccess = () => resolve(true);
+        req.onerror = () => reject(false);
+      });
+    }
+
+    // UI Toast Notification Manager (No invasivo)
+    function showToast(message, type = "success") {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `p-4 rounded-xl shadow-lg text-white font-semibold text-sm transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto ${type === 'success' ? 'bg-[#009639]' : 'bg-red-600'}`;
+      toast.innerText = message;
+      container.appendChild(toast);
+
+      // Animation In
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 10);
+
+      // Animation Out
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
