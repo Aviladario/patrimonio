@@ -1551,7 +1551,7 @@
         if (nomencladorArchivos[idx]) {
           let extension = fileObj.mimeType === 'image/jpeg' ? '.jpg' : fileObj.name.substring(fileObj.name.lastIndexOf('.'));
           if(!extension || extension === fileObj.name) extension = '';
-          fileObj.name = `${nomencladorArchivos[idx]} - Parcela ${parcela}${extension}`;
+          fileObj.name = `${idgis}_${nomencladorArchivos[idx]}${extension}`;
         }
         filesToSend.push(fileObj);
       }
