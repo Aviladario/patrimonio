@@ -1,0 +1,16 @@
+{
+  "name": "Patrimonio Posadas",
+  "short_name": "Patrimonio",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#009639",
+  "icons": [
+    {
+      "src": "LOGO_APP_final.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
