@@ -1107,21 +1107,23 @@
     let activeTabId = 1;
 
     // Inicialización al cargar el DOM
-    document.addEventListener("DOMContentLoaded", () => {
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('fecha_registro').value = today;
+   document.addEventListener("DOMContentLoaded", () => {
+      // 1. Captura y asignación de fecha actual local (UTC-3)
+      const campoFecha = document.getElementById('fecha_registro');
+      if (campoFecha && !campoFecha.value) {
+        const hoy = new Date();
+        const anio = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        campoFecha.value = `${anio}-${mes}-${dia}`;
+      }
 
-      setupCatastroAutoZeros();
-      injectGlossarySystem();
-      setupAntiKeyboardFoco();
-      setupTextCounters();
-      initIndexedDB();
-      loadDraft();
-
-      const formEl = document.getElementById('relevamiento-form');
-      formEl.addEventListener('input', () => {
-        saveDraft();
-        updateProgressIndicators();
+      // 2. Rutinas de validación y sincronización preexistentes
+      validarEstadoSesion();
+      updateProgressIndicators();
+      window.addEventListener('online', syncPendingFichas);
+      
+      // ... [Conserve aquí el resto de su código, como las alertas de duplicados] ...
       });
       formEl.addEventListener('change', () => {
         saveDraft();
