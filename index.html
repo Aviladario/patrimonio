@@ -1355,7 +1355,7 @@
             const canvas = document.createElement('canvas');
             let w = img.width;
             let h = img.height;
-            const max = 1024;
+            const max = 2048;
 
             if (w > max || h > max) {
               if (w > h) { h = Math.round((h * max) / w); w = max; } 
@@ -1367,7 +1367,7 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, w, h);
 
-            const base64 = canvas.toDataURL('image/jpeg', 0.7);
+            const base64 = canvas.toDataURL('image/jpeg', 0.9);
             loadedFilesState[idx] = {
               index: parseInt(idx),
               name: file.name.replace(/\.[^/.]+$/, "") + ".jpg",
