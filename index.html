@@ -1107,7 +1107,7 @@
     let activeTabId = 1;
 
     // Inicialización al cargar el DOM
-   document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", () => {
       // 1. Captura y asignación de fecha actual local (UTC-3)
       const campoFecha = document.getElementById('fecha_registro');
       if (campoFecha && !campoFecha.value) {
@@ -1123,8 +1123,58 @@
       updateProgressIndicators();
       window.addEventListener('online', syncPendingFichas);
       
-      // ... [Conserve aquí el resto de su código, como las alertas de duplicados] ...
+      const formEl = document.getElementById('relevamiento-form');
+      if (formEl) {
+        formEl.addEventListener('change', () => {
+          saveDraft();
+          updateProgressIndicators();
+        });
+      }
+
+      document.querySelectorAll('details.group').forEach(details => {
+        details.addEventListener('toggle', () => {
+          if (details.open) {
+            details.setAttribute('data-visited', 'true');
+          }
+          updateProgressIndicators();
+          saveDraft();
+        });
       });
+
+      // 3. Renderizado de alertas por duplicación
+      try {
+        const duplicados = JSON.parse(localStorage.getItem('pwa_alertas_duplicados') || "[]");
+        if (duplicados.length > 0) {
+          const main = document.querySelector('main');
+          if (main) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = "bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded-r-xl shadow-sm text-amber-900 text-sm mx-4 mt-4";
+            alertDiv.id = "pwa-duplicate-banner";
+            alertDiv.innerHTML = `
+              <div class="flex justify-between items-start gap-4">
+                <div>
+                  <p class="font-bold text-amber-800">Registros Duplicados en Servidor:</p>
+                  <ul class="list-disc list-inside font-mono text-xs mt-2 bg-white/60 p-2 rounded border border-amber-200">
+                    ${duplicados.map(id => `<li>${id}</li>`).join('')}
+                  </ul>
+                </div>
+                <button onclick="localStorage.removeItem('pwa_alertas_duplicados'); document.getElementById('pwa-duplicate-banner').remove();" class="text-amber-600 hover:text-amber-800 font-bold px-2 py-1 text-xs bg-amber-100 hover:bg-amber-200 rounded transition flex-shrink-0">OK</button>
+              </div>`;
+            main.insertBefore(alertDiv, main.firstChild);
+          }
+        }
+      } catch (error) {
+        console.warn("Falla en lectura de duplicados locales", error);
+      }
+    });
+
+    window.addEventListener('beforeunload', (event) => {
+      if (typeof isSyncInProgress !== 'undefined' && isSyncInProgress) {
+        event.preventDefault();
+        event.returnValue = 'Sincronización en curso.';
+        return event.returnValue;
+      }
+    });
       formEl.addEventListener('change', () => {
         saveDraft();
         updateProgressIndicators();
